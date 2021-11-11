@@ -1,5 +1,7 @@
 from flask import Flask, render_template, url_for, flash, redirect
 from forms import RegistrationForm, LoginForm
+import requests, json
+
 app = Flask(__name__)
 
 # Web app developed with reference to Corey Schafer's video series
@@ -7,24 +9,13 @@ app = Flask(__name__)
 
 app.config['SECRET_KEY'] = 'cb839c3c5d3d87f7e7b6e85220a6ab6f'
 
-rentals = [
-    {
-        'brand': 'Ford',
-        'model': 'Escape ST',
-        'year': '2019'
-    },
-    {
-        'brand': 'Hyundai',
-        'model': 'Santa Fe',
-        'year': '2013'
-    }
-]
 
+API = "http://127.0.0.1:5001"
 
 @app.route("/")
 @app.route("/home")  # Our main page for the app
 def home():
-    return render_template('home.html', rentals=rentals)
+    return render_template('home.html')
 
 
 @app.route("/about")
@@ -32,9 +23,10 @@ def about():
     return render_template('about.html', title='About')
 
 
-@app.route("/rent")
-def rent():
-    return render_template('rent.html', title='Rent')
+@app.route("/rentals")
+def rentals():
+    response = requests.get(API + "/rentals")
+    return render_template('rent.html', title='Rentals', response=json.loads(response.text))
 
 
 @app.route('/register', methods=['GET', 'POST'])
