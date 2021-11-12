@@ -2,24 +2,20 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="986c5508-eeba-4b20-a0b2-bd44df36349e" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/CPSC471Project/.idea/vcs.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CPSC471Project/.idea/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/CPSC471Project/.idea/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CPSC471Project/.idea/.name" beforeDir="false" afterPath="$PROJECT_DIR$/CPSC471Project/.idea/.name" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CPSC471Project/.idea/CPSC471Project.iml" beforeDir="false" afterPath="$PROJECT_DIR$/CPSC471Project/.idea/CPSC471Project.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CPSC471Project/.idea/codeStyles/codeStyleConfig.xml" beforeDir="false" afterPath="$PROJECT_DIR$/CPSC471Project/.idea/codeStyles/codeStyleConfig.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CPSC471Project/.idea/inspectionProfiles/profiles_settings.xml" beforeDir="false" afterPath="$PROJECT_DIR$/CPSC471Project/.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CPSC471Project/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/CPSC471Project/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CPSC471Project/.idea/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/CPSC471Project/.idea/modules.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CPSC471Project/forms.py" beforeDir="false" afterPath="$PROJECT_DIR$/CPSC471Project/forms.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CPSC471Project/rentalApp.py" beforeDir="false" afterPath="$PROJECT_DIR$/CPSC471Project/rentalApp.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CPSC471Project/rentalApp.sublime-workspace" beforeDir="false" afterPath="$PROJECT_DIR$/CPSC471Project/rentalApp.sublime-workspace" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CPSC471Project/static/main.css" beforeDir="false" afterPath="$PROJECT_DIR$/CPSC471Project/static/main.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CPSC471Project/templates/about.html" beforeDir="false" afterPath="$PROJECT_DIR$/CPSC471Project/templates/about.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CPSC471Project/templates/home.html" beforeDir="false" afterPath="$PROJECT_DIR$/CPSC471Project/templates/home.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CPSC471Project/templates/layout.html" beforeDir="false" afterPath="$PROJECT_DIR$/CPSC471Project/templates/layout.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CPSC471Project/templates/login.html" beforeDir="false" afterPath="$PROJECT_DIR$/CPSC471Project/templates/login.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CPSC471Project/templates/register.html" beforeDir="false" afterPath="$PROJECT_DIR$/CPSC471Project/templates/register.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CPSC471Project/templates/rent.html" beforeDir="false" afterPath="$PROJECT_DIR$/CPSC471Project/templates/rent.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/CPSC471Project/WebApp/run.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CPSC471Project/API/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/CPSC471Project/API/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CPSC471Project/WebApp/.idea/WebApp.iml" beforeDir="false" afterPath="$PROJECT_DIR$/CPSC471Project/WebApp/.idea/WebApp.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CPSC471Project/WebApp/forms.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/CPSC471Project/WebApp/rentalApp.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/CPSC471Project/WebApp/rentalApp.sublime-workspace" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/CPSC471Project/WebApp/static/main.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/CPSC471Project/WebApp/templates/about.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/CPSC471Project/WebApp/templates/home.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/CPSC471Project/WebApp/templates/individualrental.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/CPSC471Project/WebApp/templates/layout.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/CPSC471Project/WebApp/templates/login.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/CPSC471Project/WebApp/templates/register.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/CPSC471Project/WebApp/templates/rentals.html" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
