@@ -26,7 +26,17 @@ def about():
 @app.route("/rentals")
 def rentals():
     response = requests.get(API + "/rentals")
-    return render_template('rent.html', title='Rentals', response=json.loads(response.text))
+    return render_template('rentals.html', title='Rentals', response=json.loads(response.text))
+
+
+@app.route("/rentals/<rentalid>")
+def rentCar(rentalid):
+    response = requests.get(API + "/rentals/" + rentalid)
+    if json.loads(response.text) == None:
+        flash('No existing rental', 'danger')
+        return redirect(url_for('rentals'))
+
+    return render_template('individualrental.html', title='Rentals', response=json.loads(response.text))
 
 
 @app.route('/register', methods=['GET', 'POST'])

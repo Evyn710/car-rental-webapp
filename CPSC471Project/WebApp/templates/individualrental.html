@@ -1,0 +1,7 @@
+{% extends "layout.html" %}
+{% block content %}
+<h1>Rental Page</h1>
+  <div class="list-group">
+      <div>{{ response['Make'] }} {{ response['Model'] }}, {{ response['Color'] }}, {{ response['City'] }}</div>
+  </div>
+{% endblock content%}

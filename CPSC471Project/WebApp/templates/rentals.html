@@ -1,0 +1,18 @@
+{% extends "layout.html" %}
+{% block content %}
+<h1>Rental Page</h1>
+  <div class="list-group">
+    {% for rental in response %}
+      <div class="list-group-item h3">
+        <a href="{{ url_for('rentals') }}/{{ rental['RegNo'] }}">
+          {{ rental['Make'] }} {{ rental['Model'] }}</a>
+          <div class="text-muted h5 my-auto">
+            Color: {{ rental['Color'] }}
+          </div>
+          <div class="text-muted h5 my-auto">
+            Location: {{ rental['City'] }}
+          </div>
+      </div>
+    {% endfor %}
+  </div>
+{% endblock content%}

@@ -12,18 +12,27 @@ rental_put_args = reqparse.RequestParser()
 rental_put_args.add_argument("RegNo", type=int, help="Should be null for new, regNo to overwrite")
 
 
-class Rental(Resource):
+class AvailableRentals(Resource):
     def get(self):  # get method for getting all rentals that are available
         cursor = con.cursor(dictionary=True)
-        cursor.execute("SELECT Make, Model, Color, City, Address FROM rental WHERE Status = 'available'")
+        cursor.execute("SELECT * FROM rental WHERE Status = 'available'")
         data = cursor.fetchall()
         return data
 
-    def put(self):
-        pass
+
+class RentCar(Resource):
+    def get(self, RegNo):
+        cursor = con.cursor(dictionary=True)
+        num = cursor.execute("SELECT Make, Model, Color, City, Address FROM rental WHERE Status = 'available' and RegNo = " + str(RegNo))
+        data = cursor.fetchone()
+        return data
+
+    def put(self, RegNo):
+        cursor = con.cursor
 
 
-api.add_resource(Rental, "/rentals")
+api.add_resource(AvailableRentals, "/rentals")
+api.add_resource(RentCar, "/rentals/<int:RegNo>")
 
 
 @app.route('/')
