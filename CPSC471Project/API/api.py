@@ -28,7 +28,7 @@ class RentCar(Resource):
         return data
 
     def put(self, RegNo):
-        cursor = con.cursor
+        return request.json
 
 
 api.add_resource(AvailableRentals, "/rentals")

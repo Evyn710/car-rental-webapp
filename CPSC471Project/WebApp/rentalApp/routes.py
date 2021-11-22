@@ -1,10 +1,14 @@
 from flask import render_template, url_for, flash, redirect
-from rentalApp import app
+from rentalApp import app, bcrypt
 from rentalApp.forms import RegistrationForm, LoginForm
-import requests
-import json
+from rentalApp import con, login_manager
+from rentalApp.user import User
+from flask_login import login_user, logout_user, current_user
 
-API = "http://127.0.0.1:5001"
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.get(user_id)
 
 
 @app.route("/")
@@ -20,35 +24,68 @@ def about():
 
 @app.route("/rentals")
 def rentals():
-    response = requests.get(API + "/rentals")
-    return render_template('rentals.html', title='Rentals', response=json.loads(response.text))
+    cursor = con.cursor(dictionary=True)
+    cursor.execute("SELECT * FROM rental WHERE Status = 'available'")
+    data = cursor.fetchall()
+    cursor.close()
+    return render_template('rentals.html', title='Rentals', response=data)
 
 
-@app.route("/rentals/<rentalid>")
+@app.route("/rentals/<int:rentalid>")
 def rentCar(rentalid):
-    response = requests.get(API + "/rentals/" + rentalid)
-    if json.loads(response.text) == None:
+    cursor = con.cursor(dictionary=True)
+    num = cursor.execute(
+        "SELECT Make, Model, Color, City, Address FROM rental WHERE Status = 'available' and RegNo = " + str(rentalid))
+    data = cursor.fetchone()
+    cursor.close()
+    if data is None:
         flash('No existing rental', 'danger')
         return redirect(url_for('rentals'))
 
-    return render_template('individualrental.html', title='Rentals', response=json.loads(response.text))
+    return render_template('individualrental.html', title='Rentals', response=data, regNo=rentalid)
 
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
+    if current_user.is_authenticated:
+        return redirect(url_for('home'))
+
     form = RegistrationForm()
     if form.validate_on_submit():
-        flash('Account created successfully!', 'success')
-        return redirect(url_for('home'))
+        hash_pw = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
+
+        cursor = con.cursor()
+        account_query = "INSERT INTO account VALUES (%s, %s)"
+        account_info = (str(form.username.data), hash_pw)
+        cursor.execute(account_query, account_info)
+        con.commit()
+        cursor.close()
+
+        flash('Account created successfully! You can now login any time!', 'success')
+        return redirect(url_for('login'))
 
     return render_template('register.html', title='Register', form=form)
 
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    form = LoginForm()
-    if form.validate_on_submit():
-        flash('Logged in successfully!', 'success')
+    if current_user.is_authenticated:
         return redirect(url_for('home'))
 
+    form = LoginForm()
+    if form.validate_on_submit():
+        user = User.get(str(form.username.data))
+        if user and bcrypt.check_password_hash(user.password, form.password.data):
+            login_user(user, remember=form.remember.data)
+            flash('Logged in successfully!', 'success')
+            return redirect(url_for('home'))
+        else:
+            flash("Username or password doesn't match", 'danger')
+
     return render_template('login.html', title='Login', form=form)
+
+
+@app.route('/logout')
+def logout():
+    logout_user()
+    return redirect(url_for('home'))
