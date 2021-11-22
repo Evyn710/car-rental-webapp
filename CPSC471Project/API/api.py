@@ -15,7 +15,7 @@ rental_put_args.add_argument("RegNo", type=int, help="Should be null for new, re
 class AvailableRentals(Resource):
     def get(self):  # get method for getting all rentals that are available
         cursor = con.cursor(dictionary=True)
-        cursor.execute("SELECT * FROM rental WHERE Status = 'available'")
+        cursor.execute("SELECT Make, Model, Color, City, Address FROM rental WHERE Status = 'available'")
         data = cursor.fetchall()
         return data
 
@@ -31,11 +31,12 @@ class RentCar(Resource):
         return request.json
 
 
-api.add_resource(AvailableRentals, "/rentals")
-api.add_resource(RentCar, "/rentals/<int:RegNo>")
+api.add_resource(AvailableRentals, "/api/rentals")
+api.add_resource(RentCar, "/api/rentals/<int:RegNo>")
 
 
 @app.route('/')
+@app.route('/api')
 def root():
     return "<h1>API Page Version 0.1</h1>"
 
