@@ -24,11 +24,12 @@ def validateUser(username, password):
     user = cursor.fetchone()
     cursor.close()
     if user and bcrypt.check_password_hash(user['Password'], password):
+        # We're just going to assume that this returns a string that represents the user's position
         return "user"
     else:
         return 401
 
-
+# EP1
 class AvailableRentals(Resource):
     def get(self):  # get method for getting all rentals that are available
         cursor = con.cursor(dictionary=True)
@@ -37,7 +38,7 @@ class AvailableRentals(Resource):
         cursor.close()
         return data
 
-
+# EP3
 class AvailableRentalCar(Resource):
     def get(self, RegNo):
         cursor = con.cursor(dictionary=True)
@@ -46,7 +47,7 @@ class AvailableRentalCar(Resource):
         cursor.close()
         return data
 
-
+# EP2
 class AvailableRentalsCity(Resource):
     def get(self, city):
         cursor = con.cursor(dictionary=True)
@@ -55,7 +56,8 @@ class AvailableRentalsCity(Resource):
         cursor.close()
         return data
 
-
+# This looks unfinished, need to verify what this is meant to do
+# So far it looks like EP5, but only for current rentals. Could be an Agent endpoint
 class CurrentRentalsClient(Resource):
     def get(self):
         # check input
@@ -70,7 +72,7 @@ class CurrentRentalsClient(Resource):
         else:
             pass
 
-
+# EP4
 class NewUser(Resource):
     def post(self):
         new_user = request.json
@@ -99,6 +101,65 @@ class NewUser(Resource):
             con.commit()
             return f"Account created successfully with username {username}"
 
+# EP5
+class ClientRentHistory(Resource):
+    def get(self,customer_id):
+        # TODO, insert user verification with ID
+        # I'm not entirely familiar with how to get input from user, this may need to be fixed
+        
+        cursor = con.cursor(dictionary=True)
+        # SELECT Make, Model, Color, City, Address
+        #   FROM Rents
+        #       WHERE Customer_id = %s (customer_id,)
+        num = cursor.execute("SELECT Make, Model, Color, City, Address FROM RENTS WHERE Customer_id = %s", (customer_id,))
+        data = cursor.fetchall()
+        cursor.close()
+        return data
+
+# EP6
+class ClientInsurancePlans(Resource):
+    def get(self,customer_id):
+        # TODO, insert user verification with ID
+        
+        # SELECT IP.Plan#, IT.Price, IP.Coverage, A.Agent_name
+        #   FROM Insurance_plan as IP, Insurance_transaction as IT, agent as A  -- Aliases needed, as there are 2 instances of Plan#
+        #       WHERE IT.Customer_id = %s (customer_id,) and
+        #               IP.Plan# = IT.Plan#
+        #               IT.Agent_SSN = -- TODO This is going to need to be fixed, ot else I can't access agent's name
+        cursor = con.cursor(dictionary=True)
+        num = cursor.execute("SELECT IP.Plan#, IT.Price, IP.Coverage, A.Agent_name FROM Insurance_plan as IP, Insurance_transaction as IT, agent as A WHERE ", (customer_id,))
+        data = cursor.fetchall()
+        cursor.close()
+        return data
+
+# EP7
+class AgentGetRentalStatuses(Resource):
+    def get(self):
+        # TODO, insert user verification with ID
+
+        # SELECT *  -- Looks like the output is just the entire Rental table at the moment. Maybe we could reduce it to just Reg# and Status?
+        #   FROM Rental
+        cursor = con.cursor(dictionary=True)
+        num = cursor.execute("SELECT * FROM Rental")
+        data = cursor.fetchall()
+        cursor.close()
+        return data
+
+# EP8
+class AgentGetRentalStatus(Resource):
+    def get(self, RegNo):
+        # TODO, insert user verification with ID
+
+        # SELECT *  -- Same as EP7, I think this just needs to return a status?
+        #   FROM Rental
+        #       WHERE Reg# = %s (RegNo,)
+        cursor = con.cursor(dictionary=True)
+        num = cursor.execute("SELECT * FROM Rental WHERE Reg# = %s", (RegNo,))
+        data = cursor.fetchall()
+        cursor.close()
+        return data
+
+# EP9
 
 # adding each resource as an endpoint
 api.add_resource(AvailableRentals, "/api/rentals")
@@ -106,6 +167,10 @@ api.add_resource(AvailableRentalCar, "/api/rentals/<int:RegNo>")
 api.add_resource(AvailableRentalsCity, "/api/<city>/rentals")
 api.add_resource(CurrentRentalsClient, "/api/user/rentals")
 api.add_resource(NewUser, "/api/newuser")
+api.add_resource(ClientRentHistory, "/api/user/rentals")
+api.add_resource(ClientInsurancePlans, "/api/user/plans")
+api.add_resource(AgentGetRentalStatuses, "/api/rentals_status")
+api.add_resource(AgentGetRentalStatus, "/api/rentals_status/<int:RegNo>")
 
 
 @app.route('/')
