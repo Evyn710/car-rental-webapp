@@ -60,7 +60,7 @@ class CurrentRentalsClient(Resource):
     def get(self):
         # check input
         keys = list(dict(request.json).keys())
-        if keys[0] != 'Username' or keys[1] != 'Password' or len(keys) > 2:
+        if keys[0] != 'Username' or keys[1] != 'Password' or len(keys) != 2:
             return 'Invalid input', 400
 
         validation = validateUser(request.json['Username'], request.json['Password'])
