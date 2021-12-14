@@ -119,7 +119,7 @@ class ClientRentHistory(Resource):
 
 # EP6
 class ClientInsurancePlans(Resource):
-    def get(self,customer_id):
+    def get(self):
         # TODO, insert user verification with ID
         
         # SELECT IP.Plan#, IT.Price, IP.Coverage, A.Agent_name
