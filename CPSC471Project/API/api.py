@@ -44,8 +44,8 @@ def validate_user(username, password):
 
             # check if they are a manager
             cursor.execute("SELECT SSN FROM employee as e WHERE e.Username = %s", (username,))
-            SSN = cursor.fetchone()
-            cursor.execute("SELECT * FROM employee as e WHERE e.Mgr_ssn = %s", (SSN,))
+            ssn = cursor.fetchone()
+            cursor.execute("SELECT * FROM employee as e WHERE e.Mgr_ssn = %s", (ssn["SSN"],))
             manages = cursor.fetchone()
             if manages:
                 return "manager"

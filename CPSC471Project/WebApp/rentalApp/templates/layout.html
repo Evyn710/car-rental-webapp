@@ -34,7 +34,7 @@
         </div>
         <div class="navbar-nav ml-auto">
           {% if current_user.is_authenticated %}
-            {% if current_user.usertype != "employee" %}
+            {% if current_user.usertype != "user" %}
               <a class="nav-item nav-link" href="{{ url_for('manage') }}">Manage</a>
             {% endif %}
             <a class="nav-item nav-link" href="{{ url_for('account') }}">Account</a>
