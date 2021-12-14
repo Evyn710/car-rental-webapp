@@ -1,8 +1,8 @@
--- MySQL dump 10.13  Distrib 8.0.27, for Linux (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.23, for Win64 (x86_64)
 --
 -- Host: localhost    Database: rentalcompany
 -- ------------------------------------------------------
--- Server version	8.0.27
+-- Server version	8.0.23
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -35,8 +35,31 @@ CREATE TABLE `account` (
 
 LOCK TABLES `account` WRITE;
 /*!40000 ALTER TABLE `account` DISABLE KEYS */;
-INSERT INTO `account` VALUES ('Curtis','$2b$12$lUkltCSON5vVZg8GhEJnIeyzenlti7wsqMgGWFwp/4D9IqoHJXZga'),('EvynRissling','$2b$12$KTTB2H3c45YO9.jz15tl6eYZWddiPF7ihQAI9gWMbFDSIzJfK6m.a'),('Iamatesla','$2b$12$imQzPbB6qytT7ggMCgKTYONvhU7vBIHcBo.wiwucpwMrrvOP0q6gm');
+INSERT INTO `account` VALUES ('Curtis','$2b$12$lUkltCSON5vVZg8GhEJnIeyzenlti7wsqMgGWFwp/4D9IqoHJXZga'),('EvynRissling','$2b$12$KTTB2H3c45YO9.jz15tl6eYZWddiPF7ihQAI9gWMbFDSIzJfK6m.a'),('Iamatesla','$2b$12$imQzPbB6qytT7ggMCgKTYONvhU7vBIHcBo.wiwucpwMrrvOP0q6gm'),('testtest','$2b$12$ozwR/XZzzkVpkv7dA3V/wOlKzjGmG99qLuHdrLojwZ6Wm1YUX5wsG');
 /*!40000 ALTER TABLE `account` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `agent`
+--
+
+DROP TABLE IF EXISTS `agent`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `agent` (
+  `Agent_SSN` int NOT NULL,
+  PRIMARY KEY (`Agent_SSN`),
+  CONSTRAINT `SSN` FOREIGN KEY (`Agent_SSN`) REFERENCES `employee` (`SSN`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `agent`
+--
+
+LOCK TABLES `agent` WRITE;
+/*!40000 ALTER TABLE `agent` DISABLE KEYS */;
+/*!40000 ALTER TABLE `agent` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -95,6 +118,7 @@ CREATE TABLE `employee` (
 
 LOCK TABLES `employee` WRITE;
 /*!40000 ALTER TABLE `employee` DISABLE KEYS */;
+INSERT INTO `employee` VALUES (12345,'Evyn Rissling','07/10/2001','M',50000,'EvynRissling','Airdrie','1245 Wayridge Close',2,NULL);
 /*!40000 ALTER TABLE `employee` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -122,6 +146,29 @@ CREATE TABLE `location` (
 LOCK TABLES `location` WRITE;
 /*!40000 ALTER TABLE `location` DISABLE KEYS */;
 /*!40000 ALTER TABLE `location` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `mechanic`
+--
+
+DROP TABLE IF EXISTS `mechanic`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `mechanic` (
+  `Mechanic_SSN` int NOT NULL,
+  PRIMARY KEY (`Mechanic_SSN`),
+  CONSTRAINT `MechSSN` FOREIGN KEY (`Mechanic_SSN`) REFERENCES `employee` (`SSN`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `mechanic`
+--
+
+LOCK TABLES `mechanic` WRITE;
+/*!40000 ALTER TABLE `mechanic` DISABLE KEYS */;
+/*!40000 ALTER TABLE `mechanic` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -188,4 +235,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2021-11-22 14:38:30
+-- Dump completed on 2021-12-13 18:43:50

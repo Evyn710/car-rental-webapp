@@ -2,7 +2,7 @@ from flask import render_template, url_for, flash, redirect
 from rentalApp import app, bcrypt
 from rentalApp.forms import RegistrationForm, LoginForm
 from rentalApp import con, login_manager
-from rentalApp.user import User
+from rentalApp.user import User, validate_user
 from flask_login import login_user, logout_user, current_user
 
 
@@ -89,3 +89,24 @@ def login():
 def logout():
     logout_user()
     return redirect(url_for('home'))
+
+
+@app.route('/manage')
+def manage():
+    username = current_user.get_id()
+    user = current_user.get(username)
+    usertype = validate_user(username, user.password)
+    if usertype != "user":
+        return render_template('manage.html')
+    else:
+        flash("You do not have permissions for that.", 'danger')
+        return redirect(url_for('home'))
+
+@app.route('/account')
+def account():
+    if not current_user.is_authenticated: # make sure user is logged in
+        flash("You must log in first.", 'danger')
+        return redirect(url_for('login'))
+
+    return render_template('account.html')
+

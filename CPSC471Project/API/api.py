@@ -16,16 +16,43 @@ rental_put_args.add_argument("RegNo", type=int, help="Should be null for new, re
 
 
 # helper function to return what kind of user the user is
-def validateUser(username, password):
+# helper function to return what kind of user the user is
+def validate_user(username, password):
     cursor = con.cursor(dictionary=True)
 
-    # find out if they are user
+    # find out if they are a user
     cursor.execute("SELECT Username, Password FROM account WHERE Username = %s", (username,))
     user = cursor.fetchone()
-    cursor.close()
-    if user and bcrypt.check_password_hash(user['Password'], password):
-        # We're just going to assume that this returns a string that represents the user's position
-        return "user"
+    if user and bcrypt.check_password_hash(password, user["Password"]):
+        # check if they are an employee
+        cursor.execute("SELECT Username FROM employee WHERE Username = %s", (username,))
+        user = cursor.fetchone()
+        if user:  # they are an employee
+            # check if they are an agent
+            cursor.execute("SELECT Agent_SSN FROM agent as a, employee as e WHERE " +
+                           "a.Agent_SSN = e.SSN and e.Username = %s", (username,))
+            agent = cursor.fetchone()
+            if agent:
+                return "agent"
+
+            # check if they are a mechanic
+            cursor.execute("SELECT Mechanic_SSN FROM mechanic as m, employee as e WHERE " +
+                           "m.Mechanic_SSN = e.SSN and e.Username = %s", (username,))
+            mechanic = cursor.fetchone()
+            if mechanic:
+                return "mechanic"
+
+            # check if they are a manager
+            cursor.execute("SELECT SSN FROM employee as e WHERE e.Username = %s", (username,))
+            ssn = cursor.fetchone()
+            cursor.execute("SELECT * FROM employee as e WHERE e.Mgr_ssn = %s", (ssn["SSN"],))
+            manages = cursor.fetchone()
+            if manages:
+                return "manager"
+
+            return "employee"
+        else:
+            return "user"
     else:
         return 401
 
@@ -42,7 +69,7 @@ class AvailableRentals(Resource):
 class AvailableRentalCar(Resource):
     def get(self, RegNo):
         cursor = con.cursor(dictionary=True)
-        num = cursor.execute("SELECT Make, Model, Color, City, Address FROM rental WHERE Status = 'available' and RegNo = " + str(RegNo))
+        num = cursor.execute("SELECT Make, Model, Color, City, Address FROM rental WHERE Status = 'available' and RegNo = %s", (RegNo,))
         data = cursor.fetchone()
         cursor.close()
         return data
@@ -62,7 +89,7 @@ class CurrentRentalsClient(Resource):
     def get(self):
         # check input
         keys = list(dict(request.json).keys())
-        if keys[0] != 'Username' or keys[1] != 'Password' or len(keys) > 2:
+        if keys[0] != 'Username' or keys[1] != 'Password' or len(keys) != 2:
             return 'Invalid input', 400
 
         validation = validateUser(request.json['Username'], request.json['Password'])
