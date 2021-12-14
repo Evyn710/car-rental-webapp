@@ -94,8 +94,13 @@ def logout():
 @app.route('/manage')
 def manage():
     username = current_user.get_id()
-    user = current_user.get(username)
-    usertype = validate_user(username, user.password)
+    if current_user.is_authenticated:
+        user = current_user.get(username)
+        usertype = validate_user(username, user.password)
+    else:
+        flash("You do not have permissions for that.", 'danger')
+        return redirect(url_for('home'))
+
     if usertype != "user":
         return render_template('manage.html')
     else:

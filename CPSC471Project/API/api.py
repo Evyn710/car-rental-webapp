@@ -84,19 +84,18 @@ class AvailableRentalsCity(Resource):
         return data
 
 
-class CurrentRentalsClient(Resource):
+class CurrentRentalsClient(Resource): # FINISH THIS ONE
     def get(self):
         # check input
-        keys = list(dict(request.json).keys())
-        if keys[0] != 'Username' or keys[1] != 'Password' or len(keys) != 2:
+        try:
+            validation = validate_user(request.json['Username'], request.json['Password'])
+            if validation == 401:
+                # return authorization error
+                return 'Invalid user', 401
+            else:
+                pass     # make this get current rentals
+        except:
             return 'Invalid input', 400
-
-        validation = validateUser(request.json['Username'], request.json['Password'])
-        if validation == 401:
-            # return authorization error
-            return 'Invalid user', 401
-        else:
-            pass
 
 
 class NewUser(Resource):
