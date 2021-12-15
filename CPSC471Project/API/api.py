@@ -83,24 +83,20 @@ class AvailableRentalsCity(Resource):
         cursor.close()
         return data
 
-# This looks unfinished, need to verify what this is meant to do
-# So far it looks like EP5, but only for current rentals. Could be an Agent endpoint
-class CurrentRentalsClient(Resource):
+# EP4
+class CurrentRentalsClient(Resource): # FINISH THIS ONE
     def get(self):
         # check input
-        # We're replacing this with a try except
-        keys = list(dict(request.json).keys())
-        if keys[0] != 'Username' or keys[1] != 'Password' or len(keys) != 2:
+        try:
+            validation = validate_user(request.json['Username'], request.json['Password'])
+            if validation == 401:
+                # return authorization error
+                return 'Invalid user', 401
+            else:
+                pass     # make this get current rentals
+        except:
             return 'Invalid input', 400
 
-        validation = validate_user(request.json['Username'], request.json['Password'])
-        if validation == 401:
-            # return authorization error
-            return 'Unauthorized user', 401
-        else:
-            pass
-
-# EP4
 class NewUser(Resource):
     def post(self):
         new_user = request.json

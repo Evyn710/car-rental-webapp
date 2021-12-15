@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField, BooleanField
+from wtforms import StringField, PasswordField, SubmitField, BooleanField, SelectField
 from wtforms.validators import DataRequired, Length, EqualTo, ValidationError
 from rentalApp import con
 
@@ -41,3 +41,28 @@ class LoginForm(FlaskForm):
         cursor.close()
         if not account:
             raise ValidationError('No account exists with that username')
+
+
+class RentalForm(FlaskForm):
+    make = StringField('Make', validators=[DataRequired(), Length(min=1)])
+
+    model = StringField('Model', validators=[DataRequired(), Length(min=1)])
+
+    color = StringField('Color', validators=[DataRequired(), Length(min=1)])
+
+    cursor = con.cursor(dictionary=True)
+    location_query = "SELECT City, Address FROM location"
+    cursor.execute(location_query)
+    locations = cursor.fetchall()
+
+    location_choices = []
+    for loc in locations:
+        city = loc['City']
+        address = loc['Address']
+        full_loc = address + ', ' + city
+        location_choices += (full_loc,)
+
+    location = SelectField('Location', choices=location_choices)
+
+    submit = SubmitField('Add')
+

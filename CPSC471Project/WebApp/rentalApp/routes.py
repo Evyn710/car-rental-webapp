@@ -1,6 +1,6 @@
 from flask import render_template, url_for, flash, redirect
 from rentalApp import app, bcrypt
-from rentalApp.forms import RegistrationForm, LoginForm
+from rentalApp.forms import RegistrationForm, LoginForm, RentalForm
 from rentalApp import con, login_manager
 from rentalApp.user import User, validate_user
 from flask_login import login_user, logout_user, current_user
@@ -94,13 +94,19 @@ def logout():
 @app.route('/manage')
 def manage():
     username = current_user.get_id()
-    user = current_user.get(username)
-    usertype = validate_user(username, user.password)
+    if current_user.is_authenticated:
+        user = current_user.get(username)
+        usertype = validate_user(username, user.password)
+    else:
+        flash("You do not have permissions for that.", 'danger')
+        return redirect(url_for('home'))
+
     if usertype != "user":
         return render_template('manage.html')
     else:
         flash("You do not have permissions for that.", 'danger')
         return redirect(url_for('home'))
+
 
 @app.route('/account')
 def account():
@@ -109,4 +115,36 @@ def account():
         return redirect(url_for('login'))
 
     return render_template('account.html')
+
+@app.route('/addrental', methods=['GET', 'POST'])
+def addrental():
+    username = current_user.get_id()
+    if current_user.is_authenticated:
+        user = current_user.get(username)
+        usertype = validate_user(username, user.password)
+    else:
+        flash("You do not have permissions for that.", 'danger')
+        return redirect(url_for('home'))
+
+    if usertype != "user":
+        form = RentalForm()
+        if form.validate_on_submit():
+            print("submitted")
+            cursor = con.cursor(dictionary=True)
+            query = "INSERT INTO rental(Color, Status, Make, Model, City, Address)" \
+                    "values(%s,%s,%s,%s,%s,%s)"
+            location = form.location.data.split(', ')
+            rental_info = (form.color.data, "available", form.make.data,
+                           form.model.data, location[1], location[0])
+            cursor.execute(query, rental_info)
+            con.commit()
+            cursor.close()
+
+            flash('Rental added successfully!', 'success')
+            return redirect(url_for('manage'))
+
+        return render_template('addrental.html', form=form)
+    else:
+        flash("You do not have permissions for that.", 'danger')
+        return redirect(url_for('home'))
 
