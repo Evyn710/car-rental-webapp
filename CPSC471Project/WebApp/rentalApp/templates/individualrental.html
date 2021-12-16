@@ -3,7 +3,9 @@
 <div class="list-group">
   <div class="h2">{{ response['Make'] }} {{ response['Model'] }}</div>
   <div class="lead h4 mt-4 mb-4 text-center"> Located at the {{ response['Address'] }}, {{ response['City'] }} location</div>
-
-  </div>
+</div>
+<form method = "POST">
+  <button class="btn-block btn-lg btn-success" type="submit" href="{{ url_for('home')}}">Rent!</button>
+</form>
 </div>
 {% endblock content%}

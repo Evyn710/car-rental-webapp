@@ -1,4 +1,4 @@
-from flask import render_template, url_for, flash, redirect
+from flask import render_template, url_for, flash, redirect, request
 from rentalApp import app, bcrypt
 from rentalApp.forms import RegistrationForm, LoginForm, RentalForm
 from rentalApp import con, login_manager
@@ -31,11 +31,23 @@ def rentals():
     return render_template('rentals.html', title='Rentals', response=data)
 
 
-@app.route("/rentals/<int:rentalid>")
+@app.route("/rentals/<int:rentalid>", methods=["GET", "POST"])
 def rentCar(rentalid):
+    if request and request.method == "POST":
+        if not current_user.is_authenticated:
+            flash('You must make an account to rent!', "danger")
+            return redirect(url_for('home'))
+
+        cursor = con.cursor(dictionary=True)
+        cursor.execute("UPDATE rental SET Status = 'rented' WHERE RegNo = %s", (str(rentalid),))
+        con.commit()
+        cursor.close()
+        flash('Succesively rented the car!', "success")
+        return redirect(url_for('rent'))
+
     cursor = con.cursor(dictionary=True)
     num = cursor.execute(
-        "SELECT Make, Model, Color, City, Address FROM rental WHERE Status = 'available' and RegNo = " + str(rentalid))
+        "SELECT Make, Model, Color, City, Address FROM rental WHERE Status = 'available' and RegNo = %s", (str(rentalid),))
     data = cursor.fetchone()
     cursor.close()
     if data is None:
