@@ -101,7 +101,11 @@ class CurrentRentalsClient(Resource): # FINISH THIS ONE
                 #       WHERE   CA.username = %s and
                 #               C.Customer_id = CA.Customer_id and
                 #               R.Reg# = C.Reg# and
-                #               Not sure how to get the latest rental just yet, sorry
+                #               Not sure how to get the latest rental just yet, for now it'll be the same functionality of EP5 but only the first result
+                num = cursor.execute("SELECT R.Make, R.Model, R.Color, R.City, R.Address FROM Rents as C, Rental as R, Customer_Account as CA WHERE CA.username = %s and C.Customer_id = CA.Customer_id and R.Reg# = C.Reg#", (request.json['Username'],))
+                data = cursor.fetchone()
+                cursor.close()
+                return data
         except:
             return 'Invalid input', 400
 
@@ -238,7 +242,7 @@ class EmployeeGetAllGarages(Resource):
         except:
             return 'Invalid input', 400
 
-# EP10 TODO
+# EP10
 class EmployeeGetAllShuttles(Resource):
     def get(self,GarageNo):
         try:
@@ -246,12 +250,11 @@ class EmployeeGetAllShuttles(Resource):
         
             if validation == 'employee':
                 # Capacities refer to the Shuttle capacities
-                # TODO
                 # SELECT GS.Shuttle#, G.City, G.Address, COUNT(GS.Shuttle#), G.Capacity -- Idk about this count, it's says current capacity and total capacity but I'm a bit confused with which is stored in Garage
                 #   FROM Garage_Shuttle as GS, Garage as G
                 #       WHERE GS.Garage# = G.Garage#
                 cursor = con.cursor(dictionary=True)
-                num = cursor.execute("")
+                num = cursor.execute("SELECT GS.Shuttle#, G.City, G.Address, COUNT(GS.Shuttle#), G.Capacity FROM Garage_Shuttle as GS, Garage as G WHERE GS.Garage# = G.Garage#")
                 data = cursor.fetchall()
                 cursor.close()
                 return data
