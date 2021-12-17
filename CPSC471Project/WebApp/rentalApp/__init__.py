@@ -3,7 +3,7 @@ from flask_bcrypt import Bcrypt
 from flask_login import LoginManager
 
 import mysql.connector
-con = mysql.connector.connect(user='user', password='password', host='127.0.0.1', database='rentalcompany')
+con = mysql.connector.connect(user='user', password='password', host='127.0.0.1', database='rentalcompany', buffered=True)
 
 from rentalApp.forms import RegistrationForm, LoginForm, AddRentalForm, RentalForm
 

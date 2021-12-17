@@ -3,6 +3,7 @@ from flask import Flask, request
 from flask_restful import Api, Resource, reqparse
 import mysql.connector
 from flask_bcrypt import Bcrypt
+from datetime import date, datetime
 
 app = Flask(__name__)
 api = Api(app)
@@ -312,26 +313,27 @@ class EmployeeAddRental(Resource):
 # EP12
 class EmployeeUpdateRentalStatus(Resource):
     def put(self, RegNo):
-      try:
-        updated_rental = request.json
+        try:
+            updated_rental = request.json
 
-        # Checks the employee's input
-        validation = validate_user(request.json['Username'], request.json['Password'])
-        if validation != 'employee' and validation != 401:
-            # UPDATE Rental
-            #   SET Status='%s'
-            #       WHERE Reg#=%s
-            cursor = con.cursor()
-            num = cursor.execute("UPDATE rental SET Status = %s WHERE RegNo = %s", (updated_rental['Status'], RegNo))
-            con.commit()
-            cursor.close()
-            return f"Rental status updated at {RegNo}"
-        elif validation == 401:
-            return "Invalid login credentials", 401
-        else:
-            return 'Unauthorized User', 401
-      except:
-         return 'Invalid input', 400
+            # Checks the employee's input
+            validation = validate_user(request.json['Username'], request.json['Password'])
+            if validation != 'employee' and validation != 401:
+                # UPDATE Rental
+                #   SET Status='%s'
+                #       WHERE Reg#=%s
+                cursor = con.cursor()
+                num = cursor.execute("UPDATE rental SET Status = %s WHERE RegNo = %s",
+                                     (updated_rental['Status'], RegNo))
+                con.commit()
+                cursor.close()
+                return f"Rental status updated at {RegNo}"
+            elif validation == 401:
+                return "Invalid login credentials", 401
+            else:
+                return 'Unauthorized User', 401
+        except:
+            return 'Invalid input', 400
 
 
 # EP13
@@ -386,18 +388,18 @@ class EmployeeGetHours(Resource):
         except:
             return 'Invalid input', 400
 
-#Endpoint 15
+
+# Endpoint 15
 class AgentGetInsurancePlans(Resource):
     def get(self):
         try:
             validation = validate_user(request.json['Username'], request.json['Password'])
-
-            if validation != 'agent' and validation != 401:
+            if validation == 'agent' or validation == 'manager' and validation != 401:
                 # SELECT IP.Plan#, IP.Price, IP.Coverage
                 # FROM Insurance_Plan as IP
                 cursor = con.cursor(dictionary=True)
                 num = cursor.execute(
-                    "SELECT IP.Plan#, IP.Price, IP.Coverage FROM Insurance_Plan as IP")
+                    "SELECT IP.PlanNo, IP.Price, IP.Coverage FROM Insurance_Plan as IP")
                 data = cursor.fetchall()
                 cursor.close()
                 return data
@@ -408,92 +410,22 @@ class AgentGetInsurancePlans(Resource):
         except:
             return 'Invalid input', 400
 
-#Endpoint 16
+
+# Endpoint 16
 class AgentGetActiveInsurancePlans(Resource):
     def get(self, clientID):
         try:
             validation = validate_user(request.json['Username'], request.json['Password'])
 
-            if validation != 'agent' and validation != 401:
+            if validation == 'agent' or validation == 'manager' and validation != 401:
                 # SELECT IP.Plan#, IP.Price, IP.Coverage
                 # FROM Insurance_Plan as IP, Customer_Account as CA
                 # WHERE IP.Plan# = IT.Plan# and IT.Customer_id = CA.Customer_id and CA.Customer_id = %s
                 cursor = con.cursor(dictionary=True)
                 num = cursor.execute(
-                "SELECT IP.Plan#, IP.Price, IP.Coverage"
-                "FROM Insurance_Plan as IP, Insurance_Transaction as IT, Customer_Account as CA"
-                "WHERE IP.Plan# = IT.Plan# and IT.Customer_id = CA.Customer_id and CA.Customer_id = %s", clientID)
-                data = cursor.fetchall()
-                cursor.close()
-                return data
-            elif validation == 401:
-                return "Invalid login credentials", 401
-            else:
-                return 'Unauthorized User', 401
-        except:
-            return 'Invalid input', 400
-
-#Endpoint 19
-class MechanicGetWorks(Resource):
-    def get(self, Mechanic_SSN):
-        try:
-            validation = validate_user(request.json['Username'], request.json['Password'])
-
-            if validation != 'agent' and validation != 401:
-                # SELECT WI.City, WI.Address, WI.Garage#, WI.Hours
-                # FROM Mechanic as M, Works_in as WI
-                # WHERE M.Mechanic_SSN = WI.Mechanic_SSN and Mechanic_SSN = %s
-                cursor = con.cursor(dictionary=True)
-                num = cursor.execute(
-                "SELECT WI.City, WI.Address, WI.Garage#, WI.Hours"
-                "FROM Mechanic as M, Works_in as WI"
-                "WHERE M.Mechanic_SSN = WI.Mechanic_SSN and Mechanic_SSN = %s", (Mechanic_SSN))
-                data = cursor.fetchall()
-                cursor.close()
-                return data
-            elif validation == 401:
-                return "Invalid login credentials", 401
-            else:
-                return 'Unauthorized User', 401
-        except:
-            return 'Invalid input', 400
-#Endpoint 20
-class MechanicGetAllServices(Resource):
-    def get(self):
-        try:
-            validation = validate_user(request.json['Username'], request.json['Password'])
-
-            if validation != 'mechanic' and validation != 401:
-                # SELECT RS.Reg#, RS.Date, RS.Hours
-                # FROM Rental_Service as RS
-                cursor = con.cursor(dictionary=True)
-                num = cursor.execute(
-                "SELECT RS.Reg#, RS.Date, RS.Hours FROM Rental_Service as RS")
-                data = cursor.fetchall()
-                cursor.close()
-                return data
-            elif validation == 401:
-                return "Invalid login credentials", 401
-            else:
-                return 'Unauthorized User', 401
-        except:
-            return 'Invalid input', 400
-
-#Endpoint 21
-class MechanicGetAllRegnoServices(Resource):
-    def get(self, RegNo):
-        try:
-            validation = validate_user(request.json['Username'], request.json['Password'])
-
-            if validation != 'mechanic' and validation != 401:
-                # SELECT RS.Reg#, RS.Date, RS.Hours
-                # FROM Rental_Service as RS, Rental as R
-                # WHERE RS.Reg# = %s (RegNo)
-                cursor = con.cursor(dictionary=True)
-                num = cursor.execute(
-                "SELECT RS.Reg#, RS.Date, RS.Hours "
-                "FROM Rental_Service as RS, Rental as R"
-                "WHERE RS.Reg# = %s and RS.Reg# = R.Reg#", (RegNo))
+                    "SELECT IP.PlanNo, IP.Price, IP.Coverage"
+                    " FROM Insurance_Plan as IP, Insurance_Transaction as IT, Customer as C"
+                    " WHERE IP.PlanNo = IT.PlanNo and IT.Customer_id = C.ID and C.ID = %s", (int(clientID),))
                 data = cursor.fetchall()
                 cursor.close()
                 return data
@@ -505,69 +437,272 @@ class MechanicGetAllRegnoServices(Resource):
             return 'Invalid input', 400
 
 
-#Endpoint 22
-class MechanicGetAllShuttleServices(Resource):
-    def get(self, RegNo):
-        try:
-            validation = validate_user(request.json['Username'], request.json['Password'])
-
-            if validation != 'mechanic' and validation != 401:
-                # SELECT SServ.Shuttle#, SServ.Date, SServ.Hours
-                # FROM Shuttle_Service as Sserv
-                cursor = con.cursor(dictionary=True)
-                num = cursor.execute( 
-                "SELECT SServ.Shuttle#, SServ.Date, SServ.Hours FROM Shuttle_Service as SServ")
-                data = cursor.fetchall()
-                cursor.close()
-                return data
-            elif validation == 401:
-                return "Invalid login credentials", 401
-            else:
-                return 'Unauthorized User', 401
-        except:
-            return 'Invalid input', 400
-
-#Endpont 24
-class MechanicUpdateShuttle(Resource):
-    def put(self, ShuttleNo, Airport, Schedule):
+# Endpoint 18
+class AgentReturnRental(Resource):
+    def post(self):
       try:
-        updated_shuttle = request.json
-
-        #check input
         validation = validate_user(request.json['Username'], request.json['Password'])
-        if validation != 'mechanic' and validation != 401:
-            # UPDATE Shuttle
-            #   SET Airport_name='%s', Schedule='%s'
-            #       WHERE Shuttle#=%s
-            cursor = con.cursor()
-            num = cursor.execute("UPDATE Shuttle SET Airport_name='%s', Schedule='%s' WHERE Shuttle#=%s", (updated_shuttle['Airport']), updated_shuttle['Schedule'], ShuttleNo)
-            con.commit()
-            cursor.close()
-            return f"Shuttle Aiport, Schedule updated at {ShuttleNo}"
+
+        if validation == 'agent' or validation == 'manager':
+            # SELECT City, Address
+            #   FROM Location
+            #       WHERE City = '%s' and Address = '%s' (new_rental['City'],new_rental['Address'])
+            cursor = con.cursor(dictionary=True)
+            cursor.execute("SELECT City, Address FROM Location WHERE City = %s and Address = %s",
+                           (request.json['City'], request.json['Address']))
+            check = cursor.fetchall()
+
+            if check:
+                cursor = con.cursor(dictionary=True)
+                today = date.today()
+                today_format = today.strftime('%Y-%m-%d')
+                time = datetime.now().time()
+                time_format = time.strftime('%H:%M:%S')
+
+                num = cursor.execute(
+                    "INSERT INTO rental_return "
+                    "(Customer_id, RegNo, City, Address, Date, Time) "
+                    "VALUES (%s,%s,%s,%s,%s,%s)", (request.json["Customer_id"],
+                                                   request.json['RegNo'], request.json['City'],
+                                                   request.json['Address'], today_format, time_format))
+                con.commit()
+
+                cursor.execute("UPDATE rental SET Status = 'available', City = %s, Address = %s "
+                               "WHERE RegNo = %s", (request.json['City'], request.json['Address'], request.json['RegNo']))
+                con.commit()
+
+                cursor.close()
+                return "Rental successfully returned", 200
+            else:
+                return "Invalid Location", 400
+
         elif validation == 401:
             return "Invalid login credentials", 401
         else:
             return 'Unauthorized User', 401
       except:
-         return 'Invalid input', 400
+        return 'Invalid input', 400
 
-#Endpoint 25
-class MechanicGetAllShuttlenoServices(Resource):
-    def get(self, ShuttleNo):
+
+# Endpoint 19
+class MechanicGetWorks(Resource):
+    def get(self):
         try:
             validation = validate_user(request.json['Username'], request.json['Password'])
 
-            if validation != 'mechanic' and validation != 401:
+            if validation == 'mechanic':
+                # SELECT WI.City, WI.Address, WI.Garage#, WI.Hours
+                # FROM Mechanic as M, Works_in as WI
+                # WHERE M.Mechanic_SSN = WI.Mechanic_SSN and Mechanic_SSN = %s
+                cursor = con.cursor(dictionary=True)
+                num = cursor.execute(
+                    "SELECT WI.City, WI.Address, WI.GarageNo, WI.Hours "
+                    "FROM Mechanic as M, Works_in as WI, Employee as E"
+                    " WHERE M.Mechanic_SSN = WI.Mechanic_SSN and "
+                    "M.Mechanic_SSN = E.SSN and E.Username = %s", (request.json['Username'],))
+                data = cursor.fetchall()
+                cursor.close()
+                return data
+            elif validation == 401:
+                return "Invalid login credentials", 401
+            else:
+                return 'Unauthorized User', 401
+        except:
+            return 'Invalid input', 400
+
+
+# Endpoint 20
+class MechanicGetAllServices(Resource):
+    def get(self):
+        try:
+            validation = validate_user(request.json['Username'], request.json['Password'])
+
+            if validation == 'mechanic' or validation == 'manager':
+                # SELECT RS.Reg#, RS.Date, RS.Hours
+                # FROM Rental_Service as RS
+                cursor = con.cursor(dictionary=True)
+                num = cursor.execute(
+                    "SELECT RS.RegNo, RS.Date, RS.Hours FROM Rental_Service as RS")
+                data = cursor.fetchall()
+
+                # convert datetime objects to string
+                for d in data:
+                    d['Date'] = d['Date'].strftime('%Y-%m-%d')
+
+                cursor.close()
+                return data
+            elif validation == 401:
+                return "Invalid login credentials", 401
+            else:
+                return 'Unauthorized User', 401
+        except:
+            return 'Invalid input', 400
+
+
+# Endpoint 21
+class MechanicGetAllRegNoServices(Resource):
+    def get(self, RegNo):
+        try:
+            validation = validate_user(request.json['Username'], request.json['Password'])
+
+            if validation == 'mechanic' or validation == 'manager':
+                # SELECT RS.Reg#, RS.Date, RS.Hours
+                # FROM Rental_Service as RS, Rental as R
+                # WHERE RS.Reg# = %s (RegNo)
+                cursor = con.cursor(dictionary=True)
+                num = cursor.execute(
+                    "SELECT RS.RegNo, RS.Date, RS.Hours "
+                    "FROM Rental_Service as RS, Rental as R "
+                    "WHERE RS.RegNo = %s and RS.RegNo = R.RegNo", (RegNo,))
+                data = cursor.fetchall()
+
+                # convert date time objects to strings
+                for d in data:
+                    d['Date'] = d['Date'].strftime('%Y-%m-%d')
+
+                cursor.close()
+                return data
+            elif validation == 401:
+                return "Invalid login credentials", 401
+            else:
+                return 'Unauthorized User', 401
+        except:
+            return 'Invalid input', 400
+
+
+# Endpoint 22
+class MechanicGetAllShuttleServices(Resource):
+    def get(self):
+        try:
+            validation = validate_user(request.json['Username'], request.json['Password'])
+
+            if validation == 'mechanic' or validation == 'manager':
+                # SELECT SServ.Shuttle#, SServ.Date, SServ.Hours
+                # FROM Shuttle_Service as Sserv
+                cursor = con.cursor(dictionary=True)
+                num = cursor.execute(
+                    "SELECT SServ.ShuttleNo, SServ.Date, SServ.Hours FROM Shuttle_Service as SServ")
+                data = cursor.fetchall()
+                cursor.close()
+
+                # convert date time objects to strings
+                for d in data:
+                    d['Date'] = d['Date'].strftime('%Y-%m-%d')
+
+                return data
+            elif validation == 401:
+                return "Invalid login credentials", 401
+            else:
+                return 'Unauthorized User', 401
+        except:
+            return 'Invalid input', 400
+
+
+# Endpoint 23
+class MechanicAddShuttle(Resource):
+    def post(self):
+        try:
+            new_shuttle = request.json
+
+            # Checks the employee's input
+            validation = validate_user(request.json['Username'], request.json['Password'])
+
+            if validation == 'mechanic' or validation == 'manager':
+                cursor = con.cursor(dictionary=True)
+                cursor.execute("SELECT City, Address FROM Location WHERE City = %s and Address = %s",
+                               (new_shuttle['City'], new_shuttle['Address']))
+                check1 = cursor.fetchall()
+
+                cursor.execute("SELECT GarageNo FROM garage WHERE City = %s and Address = %s and GarageNo = %s",
+                               (new_shuttle['City'], new_shuttle['Address'], new_shuttle['GarageNo']))
+                check2 = cursor.fetchall()
+
+                if check1 and check2:
+                    atts = (new_shuttle["Capacity"],)
+                    cursor.execute(
+                        "INSERT INTO shuttle (Capacity) VALUES (%s)",
+                        atts)
+                    con.commit()
+
+                    cursor.execute("SELECT last_insert_id() as ShuttleNo")
+                    shuttle_no = cursor.fetchone()
+
+                    atts = (shuttle_no['ShuttleNo'], new_shuttle['City'],
+                            new_shuttle['Address'], new_shuttle['GarageNo'])
+                    cursor.execute(
+                        "INSERT INTO garage_shuttle (Shuttle_no, City, Address, GarageNo) "
+                        "VALUES (%s,%s,%s,%s)",
+                        atts)
+                    con.commit()
+                    cursor.close()
+                    return shuttle_no
+                else:
+                    cursor.close()
+                    return "Location and/or garage number is not valid.", 400
+            elif validation == 401:
+                return "Invalid login credentials", 401
+            else:
+                return 'Unauthorized User', 401
+        except:
+            return 'Invalid input', 400
+
+
+# Endpoint 24
+class MechanicUpdateShuttle(Resource):
+    def put(self, shuttleNo):
+        try:
+            updated_shuttle = request.json
+
+            # check input
+            validation = validate_user(request.json['Username'], request.json['Password'])
+            if validation == 'mechanic' or validation == 'manager':
+                # UPDATE Shuttle
+                #   SET Airport_name='%s', Schedule='%s'
+                #       WHERE Shuttle#=%s
+                cursor = con.cursor()
+
+                cursor.execute("SELECT * FROM Airport WHERE Name = %s",
+                               (updated_shuttle['Airport'],))
+                check = cursor.fetchall()
+
+                if check:
+                    num = cursor.execute("UPDATE Shuttle SET Airport_name=%s, Schedule=%s WHERE Number=%s",
+                                     (updated_shuttle['Airport'], updated_shuttle['Schedule'], shuttleNo))
+                    con.commit()
+                    cursor.close()
+                    return f"Shuttle Airport, Schedule updated at Shuttle #{shuttleNo}"
+                else:
+                    return "Airport does not exist.", 400
+            elif validation == 401:
+                return "Invalid login credentials", 401
+            else:
+                return 'Unauthorized User', 401
+        except:
+            return 'Invalid input', 400
+
+
+# Endpoint 25
+class MechanicGetAllShuttleNoServices(Resource):
+    def get(self, shuttleNo):
+        try:
+            validation = validate_user(request.json['Username'], request.json['Password'])
+
+            if validation == 'mechanic' or validation == 'manager':
                 # SELECT SServ.Shuttle#, SServ.Date, SServ.Hours
                 # FROM Shuttle_Service as Sserv, Shuttle as S
                 # WHERE SServ.Shuttle# = %s and SServ.Shuttle# = S.Shuttle#
                 cursor = con.cursor(dictionary=True)
-                num = cursor.execute( 
-                "SELECT SServ.Shuttle#, SServ.Date, SServ.Hours"
-                "FROM Shuttle_Service as Sserv, Shuttle as S"
-                "WHERE SServ.Shuttle# = %s and SServ.Shuttle# = S.Shuttle#)", (ShuttleNo))
+                num = cursor.execute(
+                    "SELECT SServ.ShuttleNo, SServ.Date, SServ.Hours "
+                    "FROM Shuttle_Service as Sserv "
+                    "WHERE SServ.ShuttleNo = %s", (shuttleNo,))
                 data = cursor.fetchall()
                 cursor.close()
+
+                # converting date objects to strings
+                for d in data:
+                    d['Date'] = d['Date'].strftime('%Y-%m-%d')
+
                 return data
             elif validation == 401:
                 return "Invalid login credentials", 401
@@ -576,20 +711,21 @@ class MechanicGetAllShuttlenoServices(Resource):
         except:
             return 'Invalid input', 400
 
-#Endpoint 26
+
+# Endpoint 26
 class ManagerFireEmployee(Resource):
-    def delete(self, SSN):
+    def delete(self):
         try:
             validation = validate_user(request.json['Username'], request.json['Password'])
 
-            if validation == 'manager' and validation != 401:
+            if validation == 'manager':
                 #DELETE FROM Employee as E
                 #WHERE E.SSN = %s
                 cursor = con.cursor(dictionary=True)
-                cursor.execute("DELETE FROM Employee as E WHERE E.SSN = %s" (SSN))
-                data = cursor.fetchall()
+                cursor.execute("DELETE FROM Employee as E WHERE E.SSN = %s", (request.json['SSN'],))
+                con.commit()
                 cursor.close()
-                return data
+                return {"SSN": int(request.json['SSN'])}, 200
             elif validation == 401:
                 return "Invalid login credentials", 401
             else:
@@ -597,7 +733,8 @@ class ManagerFireEmployee(Resource):
         except:
             return 'Invalid input', 400
 
-#Endpoint 27
+
+# Endpoint 27
 class ManagerRemoveRental(Resource):
     def delete(self, RegNo):
         try:
@@ -607,40 +744,43 @@ class ManagerRemoveRental(Resource):
                 #DELETE FROM Rental as R
                 #WHERE R.RegNo = %s
                 cursor = con.cursor(dictionary=True)
-                cursor.execute("DELETE FROM Rental as R WHERE r.RegNo = %s", (RegNo))
-                data = cursor.fetchall()
+                cursor.execute("DELETE FROM Rental as R WHERE R.RegNo = %s", (RegNo,))
+                con.commit()
                 cursor.close()
-                return data
+                return {"RegNo": RegNo}
             elif validation == 401:
                 return "Invalid login credentials", 401
             else:
                 return 'Unauthorized User', 401
+        except mysql.connector.errors.IntegrityError:
+            return "Violates key constraint, someone may be renting that rental.", 400
         except:
             return 'Invalid input', 400
 
-#Endpoint 28
+
+# Endpoint 28
 class ManagerHireEmployee(Resource):
-    def POST(self):
+    def post(self):
         try:
             new_employee = request.json
-            validation = validate_user(request.json['Username'], request.json['Password'])
+            validation = validate_user(request.json['Manager_username'], request.json['Manager_password'])
 
-            if validation == 'manager' and validation != 401:
+            if validation == 'manager':
                 cursor = con.cursor(dictionary=True)
-                #TODO cursor.execute("")
+                cursor.execute("SELECT * FROM location WHERE City = %s and Address = %s",
+                               (new_employee['City'], new_employee['Address']))
                 check = cursor.fetchall()
-                attributes = (new_employee['Name'], new_employee['DOB'], new_employee['Sex'], 
-                new_employee['Salary'], new_employee['Employee_username'], 
-                new_employee['City'], new_employee['Address'])
 
                 if check:
-                    cursor.execute()
-                    #TODO cursor.close()
+                    args = (new_employee['Employee_SSN'], new_employee['Name'], new_employee['DOB'], new_employee['Sex'],
+                            new_employee['Salary'], new_employee['Employee_username'], new_employee['City'], new_employee['Address'])
+                    cursor.execute("INSERT INTO employee (SSN, Name, DOB, Sex, Salary, Username, City, Address) "
+                                   "VALUES (%s,%s,%s,%s,%s,%s,%s,%s)", args)
                     con.commit()
                     cursor.close()
+                    return {"SSN": new_employee['Employee_SSN']}, 200
                 else:
-                    pass
-                    #TODO return invalid ...
+                    "No location with that city and address.", 400
             elif validation == 401:
                 return "Invalid login credentials", 401
             else:
@@ -664,19 +804,19 @@ api.add_resource(EmployeeAddRental, "/api/rentals")
 api.add_resource(EmployeeUpdateRentalStatus, "/api/rentals/<int:RegNo>")
 api.add_resource(EmployeeGetCustomerRental, "/api/rentals/<string:username>")
 api.add_resource(EmployeeGetHours, "/api/employee/hours")
-api.add_resource(CurrentRentalsClient, "/api/user/rentals")
-api.add_resource(NewUser, "/api/newuser")
 api.add_resource(AgentGetInsurancePlans, "/api/insuranceplans")
-api.add_resource(AgentGetActiveInsurancePlans, "api/<int:customerid>/insuranceplans")
-api.add_resource(MechanicGetWorks, "api/mechanic/work")
-api.add_resource(MechanicGetAllServices, "api/rentalservices")
-api.add_resource(MechanicGetAllRegnoServices, "rentalservices/<int:RegNo>")
-api.add_resource(MechanicGetAllShuttleServices, "api/shuttleservices")
-api.add_resource(MechanicUpdateShuttle, "api/shuttles/<int:shuttleNo>")
-api.add_resource(MechanicGetAllShuttlenoServices, "api/shuttleservices/<int:shuttleNo>")
-api.add_resource(ManagerFireEmployee, "api/employees")
-api.add_resource(ManagerRemoveRental, "api/rentals/<int:RegNo>")
-api.add_resource(ManagerHireEmployee, "api/employees")
+api.add_resource(AgentGetActiveInsurancePlans, "/api/<int:clientID>/insuranceplans")
+api.add_resource(MechanicGetWorks, "/api/mechanic/work")
+api.add_resource(MechanicGetAllServices, "/api/rentalservices")
+api.add_resource(MechanicGetAllRegNoServices, "/api/rentalservices/<int:RegNo>")
+api.add_resource(MechanicGetAllShuttleServices, "/api/shuttleservices")
+api.add_resource(MechanicUpdateShuttle, "/api/shuttles/<int:shuttleNo>")
+api.add_resource(MechanicGetAllShuttleNoServices, "/api/shuttleservices/<int:shuttleNo>")
+api.add_resource(AgentReturnRental, "/api/rentalreturn")
+api.add_resource(MechanicAddShuttle, "/api/shuttles")
+api.add_resource(ManagerFireEmployee, "/api/employees")
+api.add_resource(ManagerRemoveRental, "/api/rentals/<int:RegNo>")
+api.add_resource(ManagerHireEmployee, "/api/employees")
 
 @app.route('/')
 @app.route('/api')
@@ -685,4 +825,4 @@ def root():
 
 
 if __name__ == "__main__":
-    app.run(debug=True, host='127.0.0.1', port=5001)
+    app.run(debug=False, host='127.0.0.1', port=5001)
