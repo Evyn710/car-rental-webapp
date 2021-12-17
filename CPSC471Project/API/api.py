@@ -528,14 +528,14 @@ class MechanicGetAllShuttleServices(Resource):
             return 'Invalid input', 400
 
 #Endpont 24
-class EmployeeUpdateRentalStatus(Resource):
+class MechanicUpdateShuttle(Resource):
     def put(self, ShuttleNo, Airport, Schedule):
       try:
         updated_shuttle = request.json
 
         #check input
         validation = validate_user(request.json['Username'], request.json['Password'])
-        if validation != 'agent' and validation != 401:
+        if validation != 'mechanic' and validation != 401:
             # UPDATE Shuttle
             #   SET Airport_name='%s', Schedule='%s'
             #       WHERE Shuttle#=%s
@@ -600,7 +600,7 @@ api.add_resource(MechanicGetWorks, "api/mechanic/work")
 api.add_resource(MechanicGetAllServices, "api/rentalservices")
 api.add_resource(MechanicGetAllRegnoServices, "rentalservices/<int:regNo>")
 api.add_resource(MechanicGetAllShuttleServices, "api/shuttleservices")
-api.add_resource(EmployeeUpdateRentalStatus, "api/shuttles/<int:shuttleNo>")
+api.add_resource(MechanicUpdateShuttle, "api/shuttles/<int:shuttleNo>")
 api.add_resource(MechanicGetAllShuttlenoServices, "api/shuttleservices/<int:shuttleNo>")
 
 @app.route('/')
