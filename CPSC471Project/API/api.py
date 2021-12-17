@@ -676,6 +676,7 @@ api.add_resource(MechanicUpdateShuttle, "api/shuttles/<int:shuttleNo>")
 api.add_resource(MechanicGetAllShuttlenoServices, "api/shuttleservices/<int:shuttleNo>")
 api.add_resource(ManagerFireEmployee, "api/employees")
 api.add_resource(ManagerRemoveRental, "api/rentals/<int:RegNo>")
+api.add_resource(ManagerHireEmployee, "api/employees")
 
 @app.route('/')
 @app.route('/api')
