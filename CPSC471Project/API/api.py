@@ -9,7 +9,8 @@ api = Api(app)
 bcrypt = Bcrypt(app)
 
 # initializing mysql
-con = mysql.connector.connect(user='user', password='password', host='127.0.0.1', database='rentalcompany')
+con = mysql.connector.connect(user='user', password='password', host='127.0.0.1', database='rentalcompany',
+                              buffered=True)
 
 rental_put_args = reqparse.RequestParser()
 rental_put_args.add_argument("RegNo", type=int, help="Should be null for new, regNo to overwrite")
@@ -22,7 +23,7 @@ def validate_user(username, password):
     # find out if they are a user
     cursor.execute("SELECT Username, Password FROM account WHERE Username = %s", (username,))
     user = cursor.fetchone()
-    if user and bcrypt.check_password_hash(password, user["Password"]):
+    if user and bcrypt.check_password_hash(user["Password"], password):
         # check if they are an employee
         cursor.execute("SELECT Username FROM employee WHERE Username = %s", (username,))
         user = cursor.fetchone()
@@ -55,6 +56,7 @@ def validate_user(username, password):
     else:
         return 401
 
+
 # EP1
 class AvailableRentals(Resource):
     def get(self):  # get method for getting all rentals that are available
@@ -64,96 +66,76 @@ class AvailableRentals(Resource):
         cursor.close()
         return data
 
+
 # EP3
 class AvailableRentalCar(Resource):
     def get(self, RegNo):
         cursor = con.cursor(dictionary=True)
-        num = cursor.execute("SELECT Make, Model, Color, City, Address FROM rental WHERE Status = 'available' and RegNo = %s", (RegNo,))
+        num = cursor.execute(
+            "SELECT Make, Model, Color, City, Address FROM rental WHERE Status = 'available' and RegNo = %s", (RegNo,))
         data = cursor.fetchone()
         cursor.close()
         return data
+
 
 # EP2
 class AvailableRentalsCity(Resource):
     def get(self, city):
         cursor = con.cursor(dictionary=True)
-        num = cursor.execute("SELECT Make, Model, Color, City, Address FROM rental WHERE City = %s", (city,))
+        num = cursor.execute(
+            "SELECT Make, Model, Color, City, Address FROM rental WHERE City = %s and Status = 'available'", (city,))
         data = cursor.fetchall()
         cursor.close()
         return data
 
-# EP4 TODO
-class CurrentRentalsClient(Resource): # FINISH THIS ONE
-    def get(self):
-        # check input
-        try:
-            validation = validate_user(request.json['Username'], request.json['Password'])
-            if validation == 401:
-                # return authorization error
-                return 'Invalid user', 401
-            else:
-                # make this get current rentals
-                # I think this just needs to be one rental, since the customer can only rent out one vehicle
-                cursor = con.cursor(dictionary=True)
 
-                # SELECT R.Make, R.Model, R.Color, R.City, R.Address
-                #   FROM Rents as C, Rental as R, Customer_Account as CA
-                #       WHERE   CA.username = %s and
-                #               C.Customer_id = CA.Customer_id and
-                #               R.Reg# = C.Reg# and
-                #               Not sure how to get the latest rental just yet, for now it'll be the same functionality of EP5 but only the first result
-                num = cursor.execute("SELECT R.Make, R.Model, R.Color, R.City, R.Address FROM Rents as C, Rental as R, Customer_Account as CA WHERE CA.username = %s and C.Customer_id = CA.Customer_id and R.Reg# = C.Reg#", (request.json['Username'],))
-                data = cursor.fetchone()
-                cursor.close()
-                return data
-        except:
-            return 'Invalid input', 400
-
-# 
+# EP4
 class NewUser(Resource):
     def post(self):
-        new_user = request.json
+        try:
+            new_user = request.json
+            username = new_user['Username']
+            password = new_user['Password']
+            name = new_user['Name']
 
-        # check input
-        keys = list(dict(request.json).keys())
-        if keys[0] != 'Username' or keys[1] != 'Password' or len(keys) > 2:
-            return 'Invalid input', 400
+            # check if username is taken
+            cursor = con.cursor(dictionary=True)
+            cursor.execute("SELECT * from account WHERE Username = %s", (username,))
+            users = cursor.fetchall()
+            if users:
+                cursor.close()
+                return "Username taken.", 400
+            elif len(password) < 8 or len(password) > 40 or len(username) > 20 or len(username) < 5:
+                cursor.close()
+                return "Username must be between 5-20 characters, password must be 8-40.", 400
+            else:
+                hashed_password = bcrypt.generate_password_hash(password).decode('UTF-8')
+                cursor.execute("INSERT INTO account (Username, Password) VALUES (%s, %s)", (username, hashed_password))
+                con.commit()
 
-        username = new_user['Username']
-        password = new_user['Password']
+                cursor.execute("INSERT INTO customer (Username, Name) VALUES (%s, %s)", (username, name))
+                return f"Account created successfully with username {username}"
+        except:
+            return "Invalid input", 401
 
-        # check if username is taken
-        cursor = con.cursor(dictionary=True)
-        cursor.execute("SELECT * from account WHERE Username = %s", (username,))
-        users = cursor.fetchall()
-        if users:
-            cursor.close()
-            return "Username taken.", 400
-        elif len(password) < 8 or len(password) > 40 or len(username) > 20 or len(username) < 5:
-            cursor.close()
-            return "Username must be between 5-20 characters, password must be 8-40.", 400
-        else:
-            hashed_password = bcrypt.generate_password_hash(password).decode('UTF-8')
-            cursor.execute("INSERT INTO account (Username, Password) VALUES (%s, %s)", (username, hashed_password))
-            con.commit()
-            return f"Account created successfully with username {username}"
 
 # EP5
 class ClientRentHistory(Resource):
     def get(self):
         # This query needs to be updated due to how input is taken
-        # I'll add the try except later
         try:
             validation = validate_user(request.json['Username'], request.json['Password'])
-        
-            if validation == 'user':
+            if validation != 401:
                 cursor = con.cursor(dictionary=True)
                 # SELECT R.Make, R.Model, R.Color, R.City, R.Address
                 #   FROM Rents as C, Rental as R, Customer_Account as CA
                 #       WHERE   CA.username = %s and
-                #               C.Customer_id = CA.Customer_id and
-                #               R.Reg# = C.Reg#
-                num = cursor.execute("SELECT R.Make, R.Model, R.Color, R.City, R.Address FROM Rents as C, Rental as R, Customer_Account as CA WHERE CA.username = %s and C.Customer_id = CA.Customer_id and R.Reg# = C.Reg#", (request.json['Username'],))
+                #               C.Customer_id = CA.ID and
+                #               R.RegNo = C.RegNo
+                num = cursor.execute(
+                    "SELECT R.Make, R.Model, R.Color, R.City, R.Address FROM Rents as C, Rental as R, "
+                    "Customer as CA WHERE CA.username = %s and C.Customer_id = CA.ID and R.RegNo = C.RegNo",
+                    (request.json['Username'],))
                 data = cursor.fetchall()
                 cursor.close()
                 return data
@@ -161,21 +143,26 @@ class ClientRentHistory(Resource):
                 return 'Unauthorized User', 401
         except:
             return 'Invalid input', 400
+
 
 # EP6
 class ClientInsurancePlans(Resource):
     def get(self):
         try:
             validation = validate_user(request.json['Username'], request.json['Password'])
-        
-            if validation == 'user':
-                # SELECT IP.Plan#, IT.Price, IP.Coverage, A.Agent_name
-                #   FROM Insurance_plan as IP, Insurance_transaction as IT, agent as A  -- Aliases needed, as there are 2 instances of Plan#
+
+            if validation != 401:
+                # SELECT IP.Plan#, IT.Price, IP.Coverage, E.Agent_name
+                #   FROM Insurance_plan as IP, Insurance_transaction as IT, employee as E  -- Aliases needed, as there are 2 instances of Plan#
                 #       WHERE IT.Customer_id = %s (customer_id,) and
-                #               IP.Plan# = IT.Plan#
+                #               IP.PlanNo = IT.PlanNo
                 #               IT.Agent_SSN = -- TODO This is going to need to be fixed, ot else I can't access agent's name
                 cursor = con.cursor(dictionary=True)
-                num = cursor.execute("SELECT IP.Plan#, IT.Price, IP.Coverage, A.Agent_name FROM Insurance_plan as IP, Insurance_transaction as IT, agent as A WHERE ", (request.json['Username'],))
+                num = cursor.execute(
+                    "SELECT IP.PlanNo, IP.Price, IP.Coverage, E.Name FROM Insurance_plan as IP, "
+                    "insurance_transaction as IT, Customer as CA, employee as E WHERE IP.PlanNo = IT.PlanNo and "
+                    "IT.Agent_SSN = E.SSN and CA.ID = IT.Customer_id and CA.Username = %s",
+                    (request.json['Username'],))
                 data = cursor.fetchall()
                 cursor.close()
                 return data
@@ -183,53 +170,60 @@ class ClientInsurancePlans(Resource):
                 return 'Unauthorized User', 401
         except:
             return 'Invalid input', 400
+
 
 # EP7
 class EmployeeGetRentalStatuses(Resource):
     def get(self):
         try:
             validation = validate_user(request.json['Username'], request.json['Password'])
-        
-            if validation == 'employee':
+
+            if validation != "user" and validation != 401:
                 # SELECT *  -- Looks like the output is just the entire Rental table at the moment. Maybe we could reduce it to just Reg# and Status?
                 #   FROM Rental
                 cursor = con.cursor(dictionary=True)
-                num = cursor.execute("SELECT * FROM Rental")
+                num = cursor.execute("SELECT RegNo, Status FROM Rental")
                 data = cursor.fetchall()
                 cursor.close()
                 return data
+            elif validation == 401:
+                return "Invalid login credentials", 401
             else:
                 return 'Unauthorized User', 401
         except:
             return 'Invalid input', 400
+
 
 # EP8
 class EmployeeGetRentalStatus(Resource):
     def get(self, RegNo):
         try:
             validation = validate_user(request.json['Username'], request.json['Password'])
-        
-            if validation == 'employee':
+
+            if validation != "user" and validation != 401:
                 # SELECT *  -- Same as EP7, I think this just needs to return a status?
                 #   FROM Rental
                 #       WHERE Reg# = %s (RegNo,)
                 cursor = con.cursor(dictionary=True)
-                num = cursor.execute("SELECT * FROM Rental WHERE Reg# = %s", (RegNo,))
+                num = cursor.execute("SELECT RegNo, Status FROM Rental WHERE RegNo = %s", (RegNo,))
                 data = cursor.fetchone()
                 cursor.close()
                 return data
+            elif validation == 401:
+                return "Invalid login credentials", 401
             else:
                 return 'Unauthorized User', 401
         except:
             return 'Invalid input', 400
+
 
 # EP9
 class EmployeeGetAllGarages(Resource):
     def get(self):
         try:
             validation = validate_user(request.json['Username'], request.json['Password'])
-        
-            if validation == 'employee':
+
+            if validation != 'user' and validation != 401:
                 # SELECT *  -- Pretty much the same as EP7, but I think this is fine as it is
                 #   FROM Garage
                 cursor = con.cursor(dictionary=True)
@@ -237,32 +231,41 @@ class EmployeeGetAllGarages(Resource):
                 data = cursor.fetchall()
                 cursor.close()
                 return data
+            elif validation == 401:
+                return "Invalid login credentials", 401
             else:
                 return 'Unauthorized User', 401
         except:
             return 'Invalid input', 400
 
+
 # EP10
 class EmployeeGetAllShuttles(Resource):
-    def get(self,GarageNo):
+    def get(self, garageNo):
         try:
             validation = validate_user(request.json['Username'], request.json['Password'])
-        
-            if validation == 'employee':
+
+            if validation != "user" and validation != 401:
                 # Capacities refer to the Shuttle capacities
                 # SELECT GS.Shuttle#, G.City, G.Address, COUNT(GS.Shuttle#), G.Capacity -- Idk about this count, it's says current capacity and total capacity but I'm a bit confused with which is stored in Garage
                 #   FROM Garage_Shuttle as GS, Garage as G
                 #       WHERE GS.Garage# = G.Garage#
                 cursor = con.cursor(dictionary=True)
-                num = cursor.execute("SELECT GS.Shuttle#, G.City, G.Address, COUNT(GS.Shuttle#), G.Capacity FROM Garage_Shuttle as GS, Garage as G WHERE GS.Garage# = G.Garage#")
-                data = cursor.fetchall()
+                num = cursor.execute(
+                    "SELECT G.GarageNo, G.City, G.Address, COUNT(GS.Shuttle_no) as Current_capacity, "
+                    "G.Capacity as Total_capacity FROM Garage_Shuttle as GS, "
+                    "Garage as G WHERE G.GarageNo = %s and GS.GarageNo = G.GarageNo", (garageNo,))
+                data = cursor.fetchone()
                 cursor.close()
                 return data
+            elif validation == 401:
+                return "Invalid login credentials", 401
             else:
                 return 'Unauthorized User', 401
         except:
             return 'Invalid input', 400
-    
+
+
 # EP11
 class EmployeeAddRental(Resource):
     def post(self):
@@ -271,77 +274,93 @@ class EmployeeAddRental(Resource):
 
             # Checks the employee's input
             validation = validate_user(request.json['Username'], request.json['Password'])
-        
-            if validation == 'employee':
+
+            if validation != 'user' and validation != 401:
                 # It seems there's a constraint with the city and address of the rental, where they need to exist at a location
                 # So just need to check that
                 # SELECT City, Address
                 #   FROM Location
                 #       WHERE City = '%s' and Address = '%s' (new_rental['City'],new_rental['Address'])
                 cursor = con.cursor(dictionary=True)
-                cursor.execute("SELECT City, Address FROM Location WHERE City = '%s' and Address = '%s'", (new_rental['City'],new_rental['Address']))
+                cursor.execute("SELECT City, Address FROM Location WHERE City = %s and Address = %s",
+                               (new_rental['City'], new_rental['Address']))
                 check = cursor.fetchall()
 
                 if check:
                     # INSERT INTO RENTAL (Color, Status, Make, Model, City, Address)
                     #   VALUES (%s, %s, %s, %s, %s, %s) (you get the idea, this is new_rental's keys)
                     # Defined the tuple here to ensure the line wasn't too long
-                    atts = (new_rental['Color'], new_rental['Status'], new_rental['Make'], new_rental['Model'], new_rental['City'], new_rental['Address'])
-                    cursor.execute("INSERT INTO RENTAL (Color, Status, Make, Model, City, Address) VALUES (%s, %s, %s, %s, %s, %s)", atts)
-                    cursor.commit()
+                    atts = (new_rental['Color'], new_rental['Status'], new_rental['Make'], new_rental['Model'],
+                            new_rental['Price'], new_rental['City'], new_rental['Address'])
+                    cursor.execute(
+                        "INSERT INTO RENTAL (Color, Status, Make, Model, Price, City, Address) VALUES (%s, %s, %s, %s, %s, %s, %s)",
+                        atts)
+                    con.commit()
                     cursor.close()  # Not sure if this needs to be closed after a commit, but adding just in case
                     return "Rental added"
                 else:
                     cursor.close()
                     return "Location is not valid.", 400
+            elif validation == 401:
+                return "Invalid login credentials", 401
             else:
                 return 'Unauthorized User', 401
         except:
             return 'Invalid input', 400
+
 
 # EP12
 class EmployeeUpdateRentalStatus(Resource):
-    def put(self, regNo):
-        try:
-            updated_rental = request.json
+    def put(self, RegNo):
+      try:
+        updated_rental = request.json
 
-            # Checks the employee's input
-            validation = validate_user(request.json['Username'], request.json['Password'])
-            
-            if validation == 'employee':
-                # UPDATE Rental
-                #   SET Status='%s'
-                #       WHERE Reg#=%s
-                cursor = con.cursor(dictionary=True)
-                cursor.execute("UPDATE Rental SET Status='%s' WHERE Reg#=%s", (updated_rental['Status'], regNo))
-                cursor.close()
-                return "Rental status updated"
-            else:
-                return 'Unauthorized User', 401
-        except:
-            return 'Invalid input', 400
+        # Checks the employee's input
+        validation = validate_user(request.json['Username'], request.json['Password'])
+        if validation != 'employee' and validation != 401:
+            # UPDATE Rental
+            #   SET Status='%s'
+            #       WHERE Reg#=%s
+            cursor = con.cursor()
+            num = cursor.execute("UPDATE rental SET Status = %s WHERE RegNo = %s", (updated_rental['Status'], RegNo))
+            con.commit()
+            cursor.close()
+            return f"Rental status updated at {RegNo}"
+        elif validation == 401:
+            return "Invalid login credentials", 401
+        else:
+            return 'Unauthorized User', 401
+      except:
+         return 'Invalid input', 400
+
 
 # EP13
 class EmployeeGetCustomerRental(Resource):
-    def get(self, customer_id):
-        try:
-            # Checks the employee's input
-            validation = validate_user(request.json['Username'], request.json['Password'])
-            
-            if validation == 'employee':
-                # SELECT R.Reg#, R.Make, R.Model, R.Color, R.City, R.Address, R.Status
-                #   FROM Rental as R, Rents as C
-                #       WHERE   C.Customer_id='%s' and
-                #               C.Reg# = R.Reg# (customer_id,)
-                cursor = con.cursor(dictionary=True)
-                num = cursor.execute("SELECT R.Reg#, R.Make, R.Model, R.Color, R.City, R.Address, R.Status FROM Rental as R, Rents as C WHERE   C.Customer_id='%s' and C.Reg# = R.Reg#")
-                data = cursor.fetchall()
-                cursor.close()
-                return data
-            else:
-                return 'Unauthorized User', 401
-        except:
-            return 'Invalid input', 400
+    def get(self, username):
+        # try:
+        # Checks the employee's input
+        validation = validate_user(request.json['Username'], request.json['Password'])
+        print(username)
+        if validation != 'user' and validation != 401:
+            # SELECT R.Reg#, R.Make, R.Model, R.Color, R.City, R.Address, R.Status
+            #   FROM Rental as R, Rents as C
+            #       WHERE   C.Customer_id='%s' and
+            #               C.Reg# = R.Reg# (customer_id,)
+            cursor = con.cursor(dictionary=True)
+            num = cursor.execute(
+                "SELECT R.RegNo, R.Make, R.Model, R.Color, R.City, R.Address, R.Status "
+                "FROM Rental as R, Rents as C, Customer as CA"
+                " WHERE CA.Username = %s and C.Customer_id = CA.ID and C.RegNo = R.RegNo", (username,))
+            data = cursor.fetchall()
+            cursor.close()
+            return data
+        elif validation == 401:
+            return "Invalid login credentials", 401
+        else:
+            return 'Unauthorized User', 401
+    #  except:
+    #     return 'Invalid input', 400
+
 
 # EP14
 class EmployeeGetHours(Resource):
@@ -349,28 +368,30 @@ class EmployeeGetHours(Resource):
         try:
             # Checks the employee's input
             validation = validate_user(request.json['Username'], request.json['Password'])
-            
-            if validation == 'employee':
+            if validation != 'user' and validation != 401:
                 # SELECT E.Hours
                 #   FROM Employee as E, Account as A    -- Going to assume that the account username is accessable
                 #       WHERE E.Username = A.Username and
                 #               E.SSN = ''-- I'm not sure how to get this data just yet
                 cursor = con.cursor(dictionary=True)
-                num = cursor.execute("")
-                data = cursor.fetchall()
+                num = cursor.execute("SELECT Hours FROM employee WHERE Username = %s",
+                                     (request.json['Username'],))
+                data = cursor.fetchone()
                 cursor.close()
                 return data
+            elif validation == 401:
+                return "Invalid login credentials", 401
             else:
                 return 'Unauthorized User', 401
         except:
             return 'Invalid input', 400
 
+
 # adding each resource as an endpoint
 api.add_resource(AvailableRentals, "/api/rentals")
 api.add_resource(AvailableRentalCar, "/api/rentals/<int:RegNo>")
 api.add_resource(AvailableRentalsCity, "/api/<city>/rentals")
-api.add_resource(CurrentRentalsClient, "/api/user/rentals")
-api.add_resource(NewUser, "/api/newuser")
+api.add_resource(NewUser, "/api/users")
 api.add_resource(ClientRentHistory, "/api/user/rentals")
 api.add_resource(ClientInsurancePlans, "/api/user/plans")
 api.add_resource(EmployeeGetRentalStatuses, "/api/rentals_status")
@@ -379,8 +400,9 @@ api.add_resource(EmployeeGetAllGarages, "/api/garages")
 api.add_resource(EmployeeGetAllShuttles, "/api/garages/<int:garageNo>")
 api.add_resource(EmployeeAddRental, "/api/rentals")
 api.add_resource(EmployeeUpdateRentalStatus, "/api/rentals/<int:RegNo>")
-api.add_resource(EmployeeGetCustomerRental, "/api/<int:customer_id>/rentals")
+api.add_resource(EmployeeGetCustomerRental, "/api/rentals/<string:username>")
 api.add_resource(EmployeeGetHours, "/api/employee/hours")
+
 
 @app.route('/')
 @app.route('/api')
@@ -390,4 +412,3 @@ def root():
 
 if __name__ == "__main__":
     app.run(debug=True, host='127.0.0.1', port=5001)
-

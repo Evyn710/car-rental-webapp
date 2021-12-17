@@ -1,6 +1,6 @@
 {% extends "layout.html" %}
 {% block content %}
-<h1>Account Page</h1>
+<h1>Account Page of {{ current_user.get_id() }}</h1>
 {% if hours %}
     <div class="h2">Hours worked: {{ hours }}</div>
 {% endif %}
