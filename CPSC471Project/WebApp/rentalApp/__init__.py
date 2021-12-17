@@ -5,7 +5,7 @@ from flask_login import LoginManager
 import mysql.connector
 con = mysql.connector.connect(user='user', password='password', host='127.0.0.1', database='rentalcompany')
 
-from rentalApp.forms import RegistrationForm, LoginForm
+from rentalApp.forms import RegistrationForm, LoginForm, AddRentalForm, RentalForm
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'cb839c3c5d3d87f7e7b6e85220a6ab6f'

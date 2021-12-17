@@ -1,0 +1,28 @@
+{% extends "layout.html" %}
+{% block content %}
+<h1>Account Page of {{ current_user.get_id() }}</h1>
+{% if hours %}
+    <div class="h2">Hours worked: {{ hours }}</div>
+{% endif %}
+{% if rentals%}
+    <div class="h3">Transactions</div>
+{% endif %}
+{% for rental in rentals %}
+    <div class="list-group-item h3">
+        <div>{{ rental['Make'] }} {{ rental['Model'] }}</div>
+          <div class="h5 my-auto">
+              <div class="row">
+                <div class="col">
+                  Cost: ${{ rental['Price'] }}
+                </div>
+                <div class="col text-muted">
+                  Start Date: {{ rental['Start_date'] }}
+                </div>
+                <div class="col text-muted">
+                  End Date: {{ rental['End_date'] }}
+                </div>
+              </div>
+          </div>
+      </div>
+    {% endfor %}
+{% endblock content%}

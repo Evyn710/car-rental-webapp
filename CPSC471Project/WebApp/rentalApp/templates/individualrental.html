@@ -2,8 +2,44 @@
 {% block content %}
 <div class="list-group">
   <div class="h2">{{ response['Make'] }} {{ response['Model'] }}</div>
-  <div class="lead h4 mt-4 mb-4 text-center"> Located at {{ response['City'] }}, {{ response['Address'] }} location</div>
+   <form method="POST" action="">
+      {{ form.hidden_tag() }}
+      <fieldset class="form-group">
+        <legend>Rent for ${{ response['Price'] }} a day!</legend>
+        <div class="form-group">
+          {{ form.days.label(class="form-control-label") }}
 
-  </div>
+          {% if form.days.errors %}
+            {{ form.days(class="form-control is-invalid") }}
+            <div class="invalid-feedback mb-3">
+              {% for error in form.days.errors %}
+                {{ error }}
+              {% endfor %}
+            </div>
+          {% else %}
+            {{ form.days(class="form-control form-control-lg") }}
+          {% endif %}
+        </div>
+        <div class="form-group">
+          {{ form.insurance_type.label(class="form-control-label") }}
+
+          {% if form.insurance_type.errors %}
+            {{ form.insurance_type(class="form-control is-invalid") }}
+            <div class="invalid-feedback mb-3">
+              {% for error in form.insurance_type.errors %}
+                {{ error }}
+              {% endfor %}
+            </div>
+          {% else %}
+            {{ form.insurance_type(class="form-control form-control-lg") }}
+          {% endif %}
+        </div>
+        <div class="text-muted text-small">Partial coverage is 5% of the overall price, full coverage is 10% of the overall price</div>
+      </fieldset>
+      <div class="form-group">
+        {{ form.submit(class="btn-block btn-lg btn-success") }}
+      </div>
+    </form>
+  <div class="lead h4 mt-2 mb-4 text-center"> Located at the {{ response['Address'] }}, {{ response['City'] }} location</div>
 </div>
 {% endblock content%}
