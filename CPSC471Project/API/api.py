@@ -576,6 +576,78 @@ class MechanicGetAllShuttlenoServices(Resource):
         except:
             return 'Invalid input', 400
 
+#Endpoint 26
+class ManagerFireEmployee(Resource):
+    def delete(self, SSN):
+        try:
+            validation = validate_user(request.json['Username'], request.json['Password'])
+
+            if validation == 'manager' and validation != 401:
+                #DELETE FROM Employee as E
+                #WHERE E.SSN = %s
+                cursor = con.cursor(dictionary=True)
+                cursor.execute("DELETE FROM Employee as E WHERE E.SSN = %s" (SSN))
+                data = cursor.fetchall()
+                cursor.close()
+                return data
+            elif validation == 401:
+                return "Invalid login credentials", 401
+            else:
+                return 'Unauthorized User', 401
+        except:
+            return 'Invalid input', 400
+
+#Endpoint 27
+class ManagerRemoveRental(Resource):
+    def delete(self, RegNo):
+        try:
+            validation = validate_user(request.json['Username'], request.json['Password'])
+
+            if validation == 'manager' and validation != 401:
+                #DELETE FROM Rental as R
+                #WHERE R.RegNo = %s
+                cursor = con.cursor(dictionary=True)
+                cursor.execute("DELETE FROM Rental as R WHERE r.RegNo = %s", (RegNo))
+                data = cursor.fetchall()
+                cursor.close()
+                return data
+            elif validation == 401:
+                return "Invalid login credentials", 401
+            else:
+                return 'Unauthorized User', 401
+        except:
+            return 'Invalid input', 400
+
+#Endpoint 28
+class ManagerHireEmployee(Resource):
+    def POST(self):
+        try:
+            new_employee = request.json
+            validation = validate_user(request.json['Username'], request.json['Password'])
+
+            if validation == 'manager' and validation != 401:
+                cursor = con.cursor(dictionary=True)
+                #TODO cursor.execute("")
+                check = cursor.fetchall()
+                attributes = (new_employee['Name'], new_employee['DOB'], new_employee['Sex'], 
+                new_employee['Salary'], new_employee['Employee_username'], 
+                new_employee['City'], new_employee['Address'])
+
+                if check:
+                    cursor.execute()
+                    #TODO cursor.close()
+                    con.commit()
+                    cursor.close()
+                else:
+                    pass
+                    #TODO return invalid ...
+            elif validation == 401:
+                return "Invalid login credentials", 401
+            else:
+                return 'Unauthorized User', 401
+        except:
+            return 'Invalid input', 400
+
 
 # adding each resource as an endpoint
 api.add_resource(AvailableRentals, "/api/rentals")
@@ -598,10 +670,12 @@ api.add_resource(AgentGetInsurancePlans, "/api/insuranceplans")
 api.add_resource(AgentGetActiveInsurancePlans, "api/<int:customerid>/insuranceplans")
 api.add_resource(MechanicGetWorks, "api/mechanic/work")
 api.add_resource(MechanicGetAllServices, "api/rentalservices")
-api.add_resource(MechanicGetAllRegnoServices, "rentalservices/<int:regNo>")
+api.add_resource(MechanicGetAllRegnoServices, "rentalservices/<int:RegNo>")
 api.add_resource(MechanicGetAllShuttleServices, "api/shuttleservices")
 api.add_resource(MechanicUpdateShuttle, "api/shuttles/<int:shuttleNo>")
 api.add_resource(MechanicGetAllShuttlenoServices, "api/shuttleservices/<int:shuttleNo>")
+api.add_resource(ManagerFireEmployee, "api/employees")
+api.add_resource(ManagerRemoveRental, "api/rentals/<int:RegNo>")
 
 @app.route('/')
 @app.route('/api')
