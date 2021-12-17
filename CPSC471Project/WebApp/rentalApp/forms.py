@@ -12,6 +12,8 @@ class RegistrationForm(FlaskForm):
     confirm_password = PasswordField('Confirm Password',
                                      validators=[DataRequired(),
                                                  Length(min=8, max=40), EqualTo('password')])
+    name = StringField("Name", validators=[DataRequired()])
+
     submit = SubmitField('Register')
 
     def validate_username(self, username):
@@ -43,12 +45,14 @@ class LoginForm(FlaskForm):
             raise ValidationError('No account exists with that username')
 
 
-class RentalForm(FlaskForm):
+class AddRentalForm(FlaskForm):
     make = StringField('Make', validators=[DataRequired(), Length(min=1)])
 
     model = StringField('Model', validators=[DataRequired(), Length(min=1)])
 
     color = StringField('Color', validators=[DataRequired(), Length(min=1)])
+
+    price = StringField('Price', validators=[DataRequired()])
 
     cursor = con.cursor(dictionary=True)
     location_query = "SELECT City, Address FROM location"
@@ -66,3 +70,40 @@ class RentalForm(FlaskForm):
 
     submit = SubmitField('Add')
 
+    def validate_price(self, price):
+        try:
+            num = float(price.data)
+            if num < 0:
+                raise ValidationError("Price must be positive")
+        except:
+            raise ValidationError("Price must be a number")
+
+
+class RentalForm(FlaskForm):
+    days = StringField("Number of days to rent", validators=[DataRequired()])
+
+    insurance_type = SelectField("Insurance Type", choices=["partial", "full"])
+
+    submit = SubmitField('Rent!')
+
+    def validate_days(self, days):
+        try:
+            num = int(days.data)
+            if num <= 0:
+                raise ValidationError("Days must be equal or greater than one.")
+        except:
+            raise ValidationError("Days must be a number")
+
+
+class AddHours(FlaskForm):
+    hours = StringField("Hours", validators=[DataRequired()])
+
+    submit = SubmitField('Add')
+
+    def validate_hours(self, hours):
+        try:
+            num = int(hours.data)
+            if num <= 0:
+                raise ValidationError("Hours must be equal or greater than one.")
+        except:
+            raise ValidationError("Hours must be a number")

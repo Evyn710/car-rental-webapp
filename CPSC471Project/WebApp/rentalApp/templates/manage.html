@@ -4,4 +4,26 @@
   <div class="mt-4">
     <a class="btn-lg btn-block btn-success" style="text-align: center;" href="{{ url_for('addrental') }}" role="button">Add Rental</a>
   </div>
+   <form method="POST" action="">
+      {{ form.hidden_tag() }}
+      <fieldset class="row form-group mt-3 mb-1">
+        <legend>Add Hours</legend>
+        <div class="col form-group my-auto">
+          {{ form.hours.label(class="form-control-label") }}
+          {% if form.hours.errors %}
+            {{ form.hours(class="form-control is-invalid") }}
+            <div class="invalid-feedback mb-3">
+              {% for error in form.hours.errors %}
+                {{ error }}
+              {% endfor %}
+            </div>
+          {% else %}
+            {{ form.hours(class="form-control form-control-lg") }}
+          {% endif %}
+        </div>
+        <div class="col form-group mt-5">
+        {{ form.submit(class="btn-lg btn-block btn-success") }}
+        </div>
+      </fieldset>
+    </form>
 {% endblock content%}
