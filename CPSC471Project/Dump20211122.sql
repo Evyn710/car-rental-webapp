@@ -344,7 +344,7 @@ CREATE TABLE `rental` (
 
 LOCK TABLES `rental` WRITE;
 /*!40000 ALTER TABLE `rental` DISABLE KEYS */;
-INSERT INTO `rental` VALUES (13,'Red','available','Ford','Mustang','Airdrie','1293 Bridgeland Street',300),(14,'Blue','available','Dodge','Grand Caravan','Calgary','9812 University Drive',225),(15,'Red','rented','Ford','Escape','Airdrie','1293 Bridgeland Street',225),(16,'Blue','rented','Dodge','Dart','Calgary','9812 University Drive',150),(17,'Black','rented','Dodge','Durango','Airdrie','1293 Bridgeland Street',225),(18,'Red','available','Kia','Soul','Airdrie','1293 Bridgeland Street',200),(20,'Orange','serviced','Dodge','Calibre','Calgary','9812 University Drive',175),(21,'Yellow','rented','Dodge','Viper','Calgary','9812 University Drive',500),(22,'Silver','available','Hyundai','Santa Fe','Calgary','9812 University Drive',225),(24,'Black','available','Honda','Accord','Calgary','9812 University Drive',150);
+INSERT INTO `rental` VALUES (13,'Red','available','Ford','Mustang','Airdrie','1293 Bridgeland Street',300),(14,'Blue','available','Dodge','Grand Caravan','Calgary','9812 University Drive',225),(15,'Red','rented','Ford','Escape','Airdrie','1293 Bridgeland Street',225),(16,'Blue','rented','Dodge','Dart','Calgary','9812 University Drive',150),(17,'Black','rented','Dodge','Durango','Airdrie','1293 Bridgeland Street',225),(18,'Red','available','Kia','Soul','Airdrie','1293 Bridgeland Street',200),(20,'Orange','serviced','Dodge','Calibre','Calgary','9812 University Drive',175),(21,'Yellow','available','Dodge','Viper','Calgary','9812 University Drive',500),(22,'Silver','available','Hyundai','Santa Fe','Calgary','9812 University Drive',225),(24,'Black','available','Honda','Accord','Calgary','9812 University Drive',150);
 /*!40000 ALTER TABLE `rental` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -362,7 +362,7 @@ CREATE TABLE `rental_return` (
   `Address` varchar(45) NOT NULL,
   `Date` date NOT NULL,
   `Time` time NOT NULL,
-  PRIMARY KEY (`Customer_id`),
+  PRIMARY KEY (`Customer_id`,`RegNo`,`Date`),
   KEY `return_reg#_idx` (`RegNo`),
   KEY `return_location_idx` (`City`,`Address`),
   CONSTRAINT `return_customer_id` FOREIGN KEY (`Customer_id`) REFERENCES `customer` (`ID`),
@@ -377,7 +377,7 @@ CREATE TABLE `rental_return` (
 
 LOCK TABLES `rental_return` WRITE;
 /*!40000 ALTER TABLE `rental_return` DISABLE KEYS */;
-INSERT INTO `rental_return` VALUES (3,18,'Airdrie','1293 Bridgeland Street','2021-12-17','12:32:47');
+INSERT INTO `rental_return` VALUES (3,18,'Airdrie','1293 Bridgeland Street','2021-12-17','12:32:47'),(3,21,'Calgary','9812 University Drive','2021-12-18','14:59:22');
 /*!40000 ALTER TABLE `rental_return` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -540,4 +540,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2021-12-17 14:47:10
+-- Dump completed on 2021-12-18 15:00:13

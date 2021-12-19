@@ -318,7 +318,7 @@ class EmployeeUpdateRentalStatus(Resource):
 
             # Checks the employee's input
             validation = validate_user(request.json['Username'], request.json['Password'])
-            if validation != 'employee' and validation != 401:
+            if validation != 'user' and validation != 401:
                 # UPDATE Rental
                 #   SET Status='%s'
                 #       WHERE Reg#=%s
