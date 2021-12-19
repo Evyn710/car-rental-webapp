@@ -9,3 +9,7 @@ Instructions on how to run:
 4. To run the web page, run the run.py file in the webApp folder with python3 <br>
    NOTE: if none of the above works, last ditch attempt is to install all the needed dependencies outside of the venv <br>
    Also make sure you are using the right venv folder on linux, the ones in the respective directory for what you are trying to run
+<br><br>
+You also must have a MySQL server running with the settings described in each app, namely these settings: <br>
+   user='user', password='password', host='127.0.0.1', database='rentalcompany'<br>
+This database can be populated using the sql dump file contained in the repository
