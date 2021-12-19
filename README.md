@@ -7,4 +7,5 @@ Instructions on how to run:
    
 3. To run the api, run the api.py file in the API folder with python3
 4. To run the web page, run the run.py file in the webApp folder with python3 <br>
-   NOTE: if none of the above works, last ditch attempt is to install all the needed dependencies outside of the venv 
+   NOTE: if none of the above works, last ditch attempt is to install all the needed dependencies outside of the venv <br>
+   Also make sure you are using the right venv folder on linux, the ones in the respective directory for what you are trying to run
