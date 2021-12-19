@@ -173,6 +173,7 @@ def manage():
             cursor.execute("UPDATE employee SET Hours = %s WHERE Username = %s", (new_hours, username))
             con.commit()
             cursor.close()
+            flash("Hours successfully added!", 'success')
 
         return render_template('manage.html', form=form)
     else:
